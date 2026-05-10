@@ -2,7 +2,7 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
 const CLASS_NAMES = [
-    "IrodoriTTSEmojiSelector", 
+    "IrodoriTTS-v2EmojiSelector", 
 ];
 
 const EMOJI_LIST = [
@@ -48,7 +48,7 @@ const EMOJI_LIST = [
 ];
 
 const extension = {
-    name: "IrodoriTTSEmojiSelector", 
+    name: "IrodoriTTS-v2EmojiSelector", 
 
     beforeRegisterNodeDef: async function(nodeType, nodeData, app) {
         if (!CLASS_NAMES.includes(nodeType.comfyClass)) return;

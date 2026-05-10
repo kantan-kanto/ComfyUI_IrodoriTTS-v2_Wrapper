@@ -86,12 +86,24 @@ class PretrainedTextTokenizer:
                 "Install with `pip install transformers sentencepiece`."
             ) from exc
 
-        tokenizer = AutoTokenizer.from_pretrained(
-            repo_id,
-            use_fast=True,
-            trust_remote_code=False,
-            local_files_only=local_files_only,
-        )
+        tokenizer_kwargs = {
+            "use_fast": True,
+            "trust_remote_code": False,
+        }
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                repo_id,
+                **tokenizer_kwargs,
+                local_files_only=True,
+            )
+        except Exception:
+            if local_files_only:
+                raise
+            tokenizer = AutoTokenizer.from_pretrained(
+                repo_id,
+                **tokenizer_kwargs,
+                local_files_only=False,
+            )
         return cls(tokenizer=tokenizer, add_bos=add_bos)
 
     @property

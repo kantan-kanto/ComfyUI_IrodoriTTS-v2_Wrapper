@@ -2,7 +2,7 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
 const CLASS_NAMES = [
-    "IrodoriTTSReferenceAudio"
+    "IrodoriTTS-v2ReferenceAudio"
 ];
 
 const ACCEPT_EXTS = [
@@ -13,7 +13,7 @@ const ACCEPT_EXTS = [
 ]
 
 const extension = {
-    name: "IrodoriTTSReferenceAudio", 
+    name: "IrodoriTTS-v2ReferenceAudio", 
 
     beforeRegisterNodeDef: function(nodeType, nodeData, app) {
         if (!CLASS_NAMES.includes(nodeType.comfyClass)) return;

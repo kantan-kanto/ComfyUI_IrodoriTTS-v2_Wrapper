@@ -2,8 +2,7 @@ from comfy_api.latest import io
 import os
 import sys
 import hashlib
-from peft import PeftModel, LoraConfig, set_peft_model_state_dict
-from safetensors.torch import load_file
+from pathlib import Path
 import folder_paths
 
 from .irodori_tts.inference_runtime import (
@@ -26,19 +25,52 @@ def _available_precisions(device="cuda"):
         return ["fp32", "bf16"]
 
 
-IO_IRODORI_MODEL = io.Custom("IRODORI_MODEL")
-IO_IRODORI_REF_CONFIG = io.Custom("IRODORI_REF_CONFIG")
-IO_IRODORI_CFG_CONFIG = io.Custom("IRODORI_CFG_CONFIG")
-IO_IRODORI_RESCALE_CONFIG = io.Custom("IRODORI_RESCALE_CONFIG")
+IO_IRODORI_MODEL = io.Custom("IRODORI_V2_MODEL")
+IO_IRODORI_REF_CONFIG = io.Custom("IRODORI_V2_REF_CONFIG")
+IO_IRODORI_CFG_CONFIG = io.Custom("IRODORI_V2_CFG_CONFIG")
+IO_IRODORI_RESCALE_CONFIG = io.Custom("IRODORI_V2_RESCALE_CONFIG")
 
-CATEGORY = "Irodori-TTS"
+CATEGORY = "Irodori-TTS-v2"
+V2_CODEC_REPO_ID = "Aratako/Semantic-DACVAE-Japanese-32dim"
+V2_CODEC_FILENAME = "Semantic-DACVAE-Japanese-32dim-weights.pth"
+
+
+def _resolve_v2_codec_path() -> str:
+    checkpoint_codec = folder_paths.get_full_path("checkpoints", V2_CODEC_FILENAME)
+    if checkpoint_codec:
+        return checkpoint_codec
+
+    models_dir = getattr(folder_paths, "models_dir", None)
+    if models_dir:
+        for relative in (
+            Path("vae") / V2_CODEC_FILENAME,
+            Path("checkpoints") / V2_CODEC_FILENAME,
+        ):
+            candidate = Path(models_dir) / relative
+            if candidate.is_file():
+                return str(candidate)
+
+    cache_root = (
+        Path.home()
+        / ".cache"
+        / "huggingface"
+        / "hub"
+        / "models--Aratako--Semantic-DACVAE-Japanese-32dim"
+        / "snapshots"
+    )
+    if cache_root.is_dir():
+        for candidate in sorted(cache_root.glob("*/weights.pth"), reverse=True):
+            if candidate.is_file():
+                return str(candidate)
+
+    return V2_CODEC_REPO_ID
 
 
 
 # ===============================================
 # Irodori Model Loader
 # ===============================================
-class IrodoriTTSModelLoader(io.ComfyNode):
+class IrodoriTTS_v2ModelLoader(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         model_files = folder_paths.get_filename_list("checkpoints")
@@ -46,8 +78,8 @@ class IrodoriTTSModelLoader(io.ComfyNode):
         precisions = _available_precisions()
 
         return io.Schema(
-            node_id="IrodoriTTSModelLoader", 
-            display_name="IrodoriTTS Model Loader", 
+            node_id="IrodoriTTS-v2ModelLoader", 
+            display_name="IrodoriTTS-v2 Model Loader", 
             category=CATEGORY, 
             inputs=[
                 io.Combo.Input("model_name", options=model_files), 
@@ -79,7 +111,7 @@ class IrodoriTTSModelLoader(io.ComfyNode):
         runtime_key = RuntimeKey(
             checkpoint=checkpoint_path,
             model_device=model_device,
-            codec_repo="facebook/dacvae-watermarked",
+            codec_repo=_resolve_v2_codec_path(),
             model_precision=model_precision,
             codec_device=codec_device,
             codec_precision=codec_precision,
@@ -90,80 +122,19 @@ class IrodoriTTSModelLoader(io.ComfyNode):
         
         runtime, _ = get_cached_runtime(runtime_key)
         return io.NodeOutput(runtime)
-
-
-class IrodoriTTSModelLoaderHF(io.ComfyNode):
-    @classmethod
-    def define_schema(cls):
-        devices = _available_devices()
-        precisions = _available_precisions()
-
-        return io.Schema(
-            node_id="IrodoriTTSModelLoaderHF", 
-            display_name="IrodoriTTS Model Loader HF", 
-            category=CATEGORY, 
-            inputs=[
-                io.String.Input("hf_checkpoint", default="Aratako/Irodori-TTS-500M"), 
-                io.Combo.Input("model_device", options=devices), 
-                io.Combo.Input("model_precision", options=precisions), 
-                io.Combo.Input("codec_device", options=devices), 
-                io.Combo.Input("codec_precision", options=precisions), 
-                io.Boolean.Input("enable_watermark", default=False), 
-            ], 
-            outputs=[
-                IO_IRODORI_MODEL.Output(display_name="irodori_model")
-            ], 
-        )
-    
-    @classmethod
-    def execute(
-        cls, 
-        hf_checkpoint: str, 
-        model_device: str, 
-        model_precision: str, 
-        codec_device: str, 
-        codec_precision: str, 
-        enable_watermark: bool
-    ):
-        from huggingface_hub import hf_hub_download
-        
-        repo_id = hf_checkpoint.strip()
-        if not repo_id:
-            raise ValueError("hf_checkpoint is required.")
-        
-        if repo_id.endswith(".pt") or repo_id.endswith(".safetensors"):
-            checkpoint_path = repo_id
-        else:
-            checkpoint_path = hf_hub_download(repo_id=repo_id, filename="model.safetensors")
-        
-        runtime_key = RuntimeKey(
-            checkpoint=checkpoint_path,
-            model_device=model_device,
-            codec_repo="facebook/dacvae-watermarked",
-            model_precision=model_precision,
-            codec_device=codec_device,
-            codec_precision=codec_precision,
-            enable_watermark=enable_watermark,
-            compile_model=False,
-            compile_dynamic=False,
-        )
-        
-        runtime, _ = get_cached_runtime(runtime_key)
-        return io.NodeOutput(runtime)
-
 
 # ===============================================
 # Irodori Reference Audio
 # ===============================================
-class IrodoriTTSReferenceAudio(io.ComfyNode):
+class IrodoriTTS_v2ReferenceAudio(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         input_dir = folder_paths.get_input_directory()
         files = folder_paths.filter_files_content_types(os.listdir(input_dir), ["audio", "video"])
 
         return io.Schema(
-            node_id="IrodoriTTSReferenceAudio",
-            display_name="IrodoriTTS Reference Audio",
+            node_id="IrodoriTTS-v2ReferenceAudio",
+            display_name="IrodoriTTS-v2 Reference Audio",
             category=CATEGORY, 
             inputs=[
                 io.Combo.Input("ref_audio", options=files), 
@@ -206,12 +177,12 @@ class IrodoriTTSReferenceAudio(io.ComfyNode):
 # ===============================================
 # Irodori Advanced CFG
 # ===============================================
-class IrodoriTTSAdvancedCFG(io.ComfyNode):
+class IrodoriTTS_v2AdvancedCFG(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="IrodoriTTSAdvancedCFG", 
-            display_name="IrodoriTTS Advanced CFG", 
+            node_id="IrodoriTTS-v2AdvancedCFG", 
+            display_name="IrodoriTTS-v2 Advanced CFG", 
             category=CATEGORY, 
             inputs=[
                 io.Float.Input("cfg_scale_override", default=-1.0, min=-1.0, max=10.0, step=0.1, tooltip="Set to > 0 to override"), 
@@ -236,12 +207,12 @@ class IrodoriTTSAdvancedCFG(io.ComfyNode):
 # ===============================================
 # Irodori Rescale Config
 # ===============================================
-class IrodoriTTSRescaleConfig(io.ComfyNode):
+class IrodoriTTS_v2RescaleConfig(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="IrodoriTTSRescaleConfig", 
-            display_name="IrodoriTTS Rescale Config", 
+            node_id="IrodoriTTS-v2RescaleConfig", 
+            display_name="IrodoriTTS-v2 Rescale Config", 
             category=CATEGORY, 
             inputs=[
                 io.Float.Input(
@@ -314,12 +285,12 @@ class IrodoriTTSRescaleConfig(io.ComfyNode):
 # ===============================================
 # Irodori Sampler
 # ===============================================
-class IrodoriTTSSampler(io.ComfyNode):
+class IrodoriTTS_v2Sampler(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="IrodoriTTSSampler", 
-            display_name="IrodoriTTS Sampler", 
+            node_id="IrodoriTTS-v2Sampler", 
+            display_name="IrodoriTTS-v2 Sampler", 
             category=CATEGORY, 
             inputs=[
                 IO_IRODORI_MODEL.Input("model", display_name="irodori_model"), 
@@ -404,12 +375,12 @@ class IrodoriTTSSampler(io.ComfyNode):
 # ===============================================
 # Irodori Emoji Selector
 # ===============================================
-class IrodoriTTSEmojiSelector(io.ComfyNode):
+class IrodoriTTS_v2EmojiSelector(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="IrodoriTTSEmojiSelector", 
-            display_name="IrodoriTTS Emoji Selector", 
+            node_id="IrodoriTTS-v2EmojiSelector", 
+            display_name="IrodoriTTS-v2 Emoji Selector", 
             category=CATEGORY, 
             inputs=[], 
             outputs=[], 
