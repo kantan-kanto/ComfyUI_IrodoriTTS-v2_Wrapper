@@ -1,6 +1,6 @@
 # ComfyUI_IrodoriTTS-v2_Wrapper
 
-このリポジトリは [ComfyUI_IrodoriTTS_Wrapper](https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrappe) の非公式 v2 専用 fork です。
+このリポジトリは [ComfyUI_IrodoriTTS_Wrapper](https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrapper) の非公式 v2 専用 fork です。
 Irodori-TTS-500M-v2 用に変更したもので、元プロジェクトの公式版ではありません。
 upstream が公式に v2 対応した場合、この fork は archive する可能性があります。
 
@@ -24,7 +24,7 @@ codec weights と tokenizer は、未配置・未キャッシュの場合に Hug
 - IrodoriTTS-v2 Model Loader
   - モデルを読み込みます
 
-- IrodoriTTS-v2Sampler
+- IrodoriTTS-v2 Sampler
   - テキストの入力と実際の生成を行います
 
 - IrodoriTTS-v2 Referenec Audio
@@ -38,11 +38,11 @@ codec weights と tokenizer は、未配置・未キャッシュの場合に Hug
 
 ## ライセンスと謝辞
 
-この fork は元リポジトリ [ComfyUI_IrodoriTTS_Wrapper](https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrappe) を基にしています。
+この fork は元リポジトリ [ComfyUI_IrodoriTTS_Wrapper](https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrapper) を基にしています。
 元リポジトリの著作権表示および MIT License は `LICENSE` に保持しています。
 
 Original project:
-- Repository: https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrappe
+- Repository: https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrapper
 - Copyright (c) 2026 jupo-ai
 - License: MIT License
 
