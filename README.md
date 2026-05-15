@@ -2,7 +2,10 @@
 
 このリポジトリは [ComfyUI_IrodoriTTS_Wrapper](https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrapper) の非公式 v2 専用 fork です。
 Irodori-TTS-500M-v2 用に変更したもので、元プロジェクトの公式版ではありません。
-upstream が公式に v2 対応した場合、この fork は archive する可能性があります。
+
+> [!IMPORTANT]
+> 公式の [ComfyUI_IrodoriTTS_Wrapper](https://github.com/jupo-ai/ComfyUI_IrodoriTTS_Wrapper) が v2 に対応したため、この fork はアーカイブします。
+> 今後は公式リポジトリの利用を推奨します。
 
 [IrodoriTTS-v2](https://github.com/Aratako/Irodori-TTS)のComfyUI用カスタムノードです。
 v2用のcodecは `Aratako/Semantic-DACVAE-Japanese-32dim` 固定です。
