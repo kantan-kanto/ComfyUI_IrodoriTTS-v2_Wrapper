@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-dialoguetts"
 description = "Speaker-tagged dialogue TTS nodes for ComfyUI. Currently provides an IrodoriTTS-v2 backend for generating two-character dialogue audio from dialogue_segments_json."
-version = "0.1.0"
+version = "0.2.0"
 license = {file = "LICENSE"}
 dependencies = [
   "dacvae @ git+https://github.com/facebookresearch/dacvae",
