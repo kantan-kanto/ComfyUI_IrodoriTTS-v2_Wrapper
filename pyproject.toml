@@ -1,0 +1,22 @@
+[project]
+name = "comfyui-dialoguetts"
+description = "Speaker-tagged dialogue TTS nodes for ComfyUI. Currently provides an IrodoriTTS-v2 backend for generating two-character dialogue audio from dialogue_segments_json."
+version = "0.1.0"
+license = {file = "LICENSE"}
+dependencies = [
+  "dacvae @ git+https://github.com/facebookresearch/dacvae",
+  "torchcodec>=0.10.0",
+  "transformers<5",
+  "sentencepiece>=0.1.99",
+  "soundfile>=0.12.0",
+]
+
+[project.urls]
+Repository = "https://github.com/kantan-kanto/ComfyUI-DialogueTTS"
+Documentation = "https://github.com/kantan-kanto/ComfyUI-DialogueTTS/blob/main/README.md"
+"Bug Tracker" = "https://github.com/kantan-kanto/ComfyUI-DialogueTTS/issues"
+
+[tool.comfy]
+PublisherId = "kantan-kanto"
+DisplayName = "ComfyUI-DialogueTTS"
+includes = []

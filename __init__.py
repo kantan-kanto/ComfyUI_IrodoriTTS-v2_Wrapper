@@ -12,6 +12,7 @@ class Extension(ComfyExtension):
             nodes.IrodoriTTS_v2AdvancedCFG, 
             nodes.IrodoriTTS_v2RescaleConfig, 
             nodes.IrodoriTTS_v2Sampler, 
+            nodes.IrodoriTTS_v2DialogueTTS,
             nodes.IrodoriTTS_v2EmojiSelector, 
         ]
 
